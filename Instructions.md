@@ -153,7 +153,7 @@ This is required for most world instructions to work, only one call is necessary
 ## Recipe book
 *A collection of little snippets.*
 
-# Loop 
+### Loop 
 - A simple loop that counts from 0 to 9, printing the current loop count
 ```
 SetInteger loopCounter 0
