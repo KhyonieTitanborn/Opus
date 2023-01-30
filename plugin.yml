@@ -1,0 +1,8 @@
+main: net.titanborn.opus.Opus 
+name: TitanbornOpus
+prefix: Opus
+version: 1.0.0
+description: Titanborn questing plugin.
+api-version: 1.17
+depend: [Hyacinth]
+author: Khyonie#2082

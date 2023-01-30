@@ -1,0 +1,6 @@
+name:Opus
+source:src
+secondarysource:
+output: ~/Servers/DevServer/1193/plugins/Opus.jar
+classpath:lib/spigot-api-1.19.3-R0.1-SNAPSHOT-shaded.jar:lib/Hyacinth.jar
+input:plugin.yml
