@@ -171,7 +171,7 @@ SendChatButton "Click here to jump to line 5: <Click me!:titanscript jump 5>"
 ## Recipe book
 *A collection of little snippets.*
 
-# Loop 
+### Loop 
 - A simple loop that counts from 0 to 9, printing the current loop count
 ```
 SetInteger loopCounter 0
