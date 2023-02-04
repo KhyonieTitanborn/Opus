@@ -16,13 +16,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import coffee.khyonieheart.hyacinth.Hyacinth;
 import coffee.khyonieheart.hyacinth.Message;
 import coffee.khyonieheart.hyacinth.command.BukkitCommandMeta;
+import coffee.khyonieheart.hyacinth.print.Grammar;
 import net.titanborn.opus.script.Script;
 import net.titanborn.opus.waypoint.AxisAlignedBoundingBox;
 import net.titanborn.opus.waypoint.Waypoint;
 import net.titanborn.opus.waypoint.WaypointManager;
 
 @BukkitCommandMeta(
-	usage = "/opus <add | subscribe | visualize>",
+	usage = "/opus <add | subscribe | visualize | attachscript>",
 	description = "Command for Titanborn questing.",
 	permission = "titanborn.opus",
 	aliases = { }
@@ -59,7 +60,7 @@ public class OpusCommand implements CommandExecutor
 
 	private List<Waypoint> createdWaypoints = new ArrayList<>(); // FIXME Debug
 
-	// /opus add x y z rx ry rz
+	// /opus add x y z rx ry rz <script>
 	private boolean command_add(CommandSender sender, String[] args)
 	{
 		if (!(sender instanceof Player))
@@ -70,7 +71,7 @@ public class OpusCommand implements CommandExecutor
 
 		if (args.length < 7)
 		{
-			Message.send(sender, "§cUsage: /opus add x y z rx ry rz");
+			Message.send(sender, "§cUsage: /opus add x y z rx ry rz <optional:script>");
 			return true;
 		}
 
@@ -94,6 +95,22 @@ public class OpusCommand implements CommandExecutor
 		createdWaypoints.add(waypoint);
 		WaypointManager.subscribe((Player) sender, waypoint);
 		Message.send(sender, "§aCreated a new waypoint at (" + data[0] + ", " + data[1] + ", " + data[2] + ") and subscribed to it!");	
+
+		if (args.length == 8)
+		{
+			File scriptFile = new File("./Titanborn/Scripts/" + args[7] + ".script");
+			if (!scriptFile.exists())
+			{
+				Message.send(sender, "§cNo script file exists by that name. Check script name and attach with /opus attachscript " + (createdWaypoints.size() - 1) + " <script>");
+				return true;
+			}
+
+			waypoint.setScript(new Script(scriptFile));
+			Message.send(sender, "§aSuccessfully attached script \"" + scriptFile.getName() + "\" to waypoint!");
+			return true;
+		}
+
+		Message.send(sender, "§aAttach a script to this waypoint by running /opus attachscript " + (createdWaypoints.size() - 1) + " <script>.");
 
 		return true;
 	}
@@ -133,6 +150,8 @@ public class OpusCommand implements CommandExecutor
 		return true;
 	}
 
+	// TODO Add command that handles actions such as clicking on a chat button
+
 	private boolean command_visualize(CommandSender sender, String[] args)
 	{
 		if (!(sender instanceof Player))
@@ -143,7 +162,20 @@ public class OpusCommand implements CommandExecutor
 
 		if (args.length == 1)
 		{
-			return false;
+			printAllWaypoints(sender);
+			Message.send(sender, "§9§oRunning /opus visualize all will display all created waypoints.");
+			return true;
+		}
+
+		if (args[1].equals("all"))
+		{
+			for (Waypoint w : createdWaypoints)
+			{
+				showWaypoint(w.getAabb());
+			}
+			Message.send(sender, "§aShowing all " + createdWaypoints.size() + Grammar.plural(createdWaypoints.size(), " waypoint ", " waypoints ") + " for 15 seconds.");
+
+			return true;
 		}
 		
 		int id;
@@ -160,6 +192,15 @@ public class OpusCommand implements CommandExecutor
 		}
 
 		AxisAlignedBoundingBox aabb = createdWaypoints.get(id).getAabb();
+		showWaypoint(aabb);
+
+		Message.send(sender, "§aShowing waypoint ID " + id + " for 15 seconds.");
+
+		return true;
+	}
+
+	private void showWaypoint(AxisAlignedBoundingBox aabb)
+	{
 		Location center = aabb.getCenter();
 
 		for (int iy = (int) (center.getY() - aabb.getRadiusY()); iy < center.getY() + aabb.getRadiusY(); iy++)
@@ -188,10 +229,6 @@ public class OpusCommand implements CommandExecutor
 				}
 			}
 		}
-
-		Message.send(sender, "§aShowing waypoint ID " + id + " for 15 seconds.");
-
-		return true;
 	}
 
 	// /opus attachscript <ID> <Script name>

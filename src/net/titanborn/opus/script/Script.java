@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,11 +22,15 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import coffee.khyonieheart.hyacinth.Hyacinth;
 import coffee.khyonieheart.hyacinth.Logger;
 import coffee.khyonieheart.hyacinth.Message;
 import coffee.khyonieheart.hyacinth.util.marker.NotNull;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 
 public class Script 
 {
@@ -43,6 +49,7 @@ public class Script
 		try (Scanner scanner = new Scanner(scriptFile))
 		{
 			List<String> readData = new ArrayList<>();
+			readData.add("// Script loaded from " + scriptFile.getName());
 
 			while (scanner.hasNext())
 			{
@@ -57,6 +64,11 @@ public class Script
 		Logger.log("Loaded new script \"" + scriptFile.getName() + "\"");
 	}
 
+	public String getIdentifier()
+	{
+		return file.getName().replaceFirst("[.].*", "");
+	}
+
 	public void play(
 		@NotNull Player target
 	) {
@@ -69,6 +81,18 @@ public class Script
 		createdIntegers.put("return", 0);
 
 		// Perform script
+		new BukkitRunnable()
+		{
+			@Override
+			public void run() 
+			{
+				playScript(target);	
+			}
+		}.runTask(Hyacinth.getInstance());
+	}
+
+	private void playScript(Player target)
+	{
 		playLoop: for (int lineIndex = 0; lineIndex < scriptActions.length; lineIndex++)
 		{
 			String line = scriptActions[lineIndex];
@@ -87,6 +111,11 @@ public class Script
 				if (split[i].startsWith("$"))
 				{
 					split[i] = "" + createdIntegers.get(split[i].substring(1));
+				}
+
+				if (split[i].startsWith("//"))
+				{
+					break;
 				}
 
 				if (addToBuffer)
@@ -167,14 +196,41 @@ public class Script
 						createdIntegers.put("return", lineIndex);
 						lineIndex = Integer.parseInt(args[0]);
 					}
+					case "Synchronize" -> {
+						Thread current = Thread.currentThread();
+						new BukkitRunnable()
+						{
+							@Override
+							public void run()
+							{
+								current.notify();
+							}
+						}.runTask(Hyacinth.getInstance());
+						Thread.currentThread().wait();
+					}
+					case "Delay" -> {
+						Thread current = Thread.currentThread();
+						new BukkitRunnable()
+						{
+							@Override
+							public void run()
+							{
+								current.notify();
+							}
+						}.runTaskLater(Hyacinth.getInstance(), Long.parseLong(args[0]));
+						Thread.currentThread().wait();
+					}
 					case "Return" -> lineIndex = createdIntegers.get("return");
 					case "SetReturn" -> createdIntegers.put("return", Integer.parseInt(args[0]));
 					case "Jump" -> lineIndex = Integer.parseInt(args[0]) - 1;
-					case "EndScript" -> { break playLoop; }
+					case "EndScript" -> { 
+						break playLoop; 
+					}
 					case "Print" -> Logger.log("Script " + file.getName() + " > " + args[0]);
 
 					// Actions
 					case "SetWorld" -> world = Hyacinth.getInstance().getServer().getWorld(split[1]);
+					case "SendChatButton" -> target.spigot().sendMessage(buildClickableFromArg(args[0]));
 					case "Chat" -> Message.send(target, args[0]);
 					case "PlayWorldSound" -> world.playSound(new Location(world, Double.parseDouble(args[0]), Double.parseDouble(args[1]), Double.parseDouble(args[2])), Sound.valueOf(args[3]), Float.parseFloat(args[4]), Float.parseFloat(args[5]));
 					case "BreakBlock" -> world.getBlockAt(new Location(world, Double.parseDouble(args[0]), Double.parseDouble(args[1]), Double.parseDouble(args[2]))).breakNaturally();
@@ -208,6 +264,47 @@ public class Script
 				Message.send(target, "§cAn error occurred performing script " + file.getName() + " @ line " + lineIndex + ". Please contact an administrator, thanks!");
 				e.printStackTrace();
 			}
+			
+			ScriptManager.registerStop(target, this);
 		}
+	}
+
+	private static BaseComponent[] buildClickableFromArg(String arg) // TODO Public is debug, should be private
+	{
+		Pattern pattern = Pattern.compile("<(.+?)>");
+		Matcher matcher = pattern.matcher(arg);
+
+		if (!matcher.find())
+		{
+			return new ComponentBuilder()
+				.append(arg)
+				.create();
+		}
+		matcher.reset();
+		
+		// Preprocess buttons
+		Map<Integer, String[]> clickData = new HashMap<>();
+		while (matcher.find())
+		{
+			clickData.put(clickData.size(), matcher.group().substring(1, matcher.group().length() - 1) .split("[|]"));
+		}
+
+		int offset = 1;
+		String[] argBuffer = arg.split("<.*?>", -1);
+
+		ComponentBuilder builder = new ComponentBuilder();
+		for (int i = 0; i < argBuffer.length; i++)
+		{
+			builder = builder.append(argBuffer[i]);
+			if (clickData.containsKey(i))
+			{
+				builder.append(clickData.get(i)[0]);
+				builder.getComponent(i + offset).setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + clickData.get(i)[1]));
+				clickData.remove(i);
+				offset++;
+			}
+		}
+
+		return builder.create();
 	}
 }

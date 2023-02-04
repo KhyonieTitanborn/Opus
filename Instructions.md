@@ -47,9 +47,9 @@ When it may not be entirely clear what a parameter is, the parameter will be sho
 - Sets $return to the next line and moves execution to the specified line.
 - Example:
 ```
-Print "This is line 0"
-Call 4
-// $return is now 3 (comments are counted as lines)
+Print "This is line 1"
+Call 5
+// $return is now 4 (comments are counted as lines)
 EndScript
 Print "This is line 4"
 Return
@@ -60,6 +60,12 @@ Print "This will never be executed!"
 `Return`
 - Moves execution to the line $return.
 
+`Delay <int>`
+- Delays the next instruction until after the specified number of ticks have elapsed.
+- After this instruction, the `Synchronize` instruction may be required.
+
+`Synchronize`
+- Synchronizes the next instruction to happen on the next tick. If any instruction desynchronizes from a tick, most instructions after will fail.
 
 ## Variable instructions
 
@@ -121,7 +127,7 @@ This is required for most world instructions to work, only one call is necessary
 - Spawns an entity at the given coordinates.
 - Uses Java org.bukkit.entity.EntityType, see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
 - Exact entity can be targetted with entity instructions by referring to the given string.
-- *Requires world to be set.
+- *Requires world to be set.*
 
 
 ## Entity instructions
@@ -149,6 +155,18 @@ This is required for most world instructions to work, only one call is necessary
 - Plays a per-player sound (not audible to other players) at the player's location.
 - Uses Java org.bukkit.Sound, see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
 
+`PrimeScriptButton`
+- Allows a player to execute a script-altering command, such as `/titanscript jump 5`, which should always be done through a chat button.
+
+`SendChatButton <string>`
+- Sends the given message to the player executing this script, with support for command-executing buttons.
+- All titanscript commands will require the `PrimeScriptButton` instruction to be used.
+- Buttons are inserted in the following format: "<Button text:command without slash>".
+- Ex: 
+```
+PrimeScriptButton // Prime titanscript action
+SendChatButton "Click here to jump to line 5: <Click me!:titanscript jump 5>"
+```
 
 ## Recipe book
 *A collection of little snippets.*
