@@ -5,7 +5,10 @@
 
 ### Variables
 Variables can be set by name in any variable-setting instruction, and can be referenced in any instruction by a dollar $ sign and the name. 
-Three variables can always be accessed: the player's coordinates, as $playerX, $playerY, and $playerZ
+Several variables can always be accessed: 
+- The player's coordinates, as $playerX, $playerY, and $playerZ
+- The current line, as $line
+- The current return line, as $return
 
 At this time, only integers and entities can be stored.
 
@@ -28,6 +31,7 @@ When it may not be entirely clear what a parameter is, the parameter will be sho
 
 
 ## Logic instructions
+*Note: If a jump moves goes beyond the number of lines a script contains (either < 0 or >= script's length) the script will stop running and exit.*
 
 `Jump <int>`
 - Moves execution to the specified line.
@@ -38,24 +42,23 @@ When it may not be entirely clear what a parameter is, the parameter will be sho
 `JumpNot <int>`
 - Moves execution to the specified line if and only if the output of the previous boolean instruction was false.
 
-`JumpEqual <int> <int>`
+`JumpEqual <int> <int> <line:int>`
 - Moves execution to the specified line if and only if the two given integers are equal.
 
-`JumpNotEqual <int> <int>`
+`JumpNotEqual <int> <int> <line:int>`
 - Moves execution to the specified line if and only if the two given integers are not equal.
 
 `Call <int>`
 - Sets $return to the next line and moves execution to the specified line.
 - Example:
 ```
-Print "This is line 1"
+Label start
 Call 5
-// $return is now 4 (comments are counted as lines)
+Label end
 EndScript
-Print "This is line 4"
+Print "Reached line 5"
 Return
-// ^ Jumps to line 3
-Print "This will never be executed!"
+Print "This will never be executed."
 ```
 - To chain `Call`s, use `Push $return` to store $return on the stack, then use `Pop $return` later to retrieve it.
 
@@ -63,7 +66,7 @@ Print "This will never be executed!"
 - Moves execution to the line $return.
 
 `Delay <int>`
-- Delays the next instruction until after the specified number of ticks have elapsed.
+- Delays the next instruction until after the specified number of milliseconds have elapsed.
 - After this instruction, the `Synchronize` instruction may be required.
 
 `Label <string>`
@@ -112,13 +115,12 @@ Print "This will never be executed!"
 `EndScript`
 - Ends script execution.
 
-`Print <*>`
+`Print <string>`
 - Prints the given string into the server console.
-*Note: Quotes can be used to concatenate a string, however with variables, variables must be seperate from any quotation marks. *
-Example: Correct: `Print " $aVar is the count, the count is $aVar "`, Incorrect: "$aVar is the count, the count is $aVar"
 
 `None`
 - Does nothing. This is the default instruction when an unknown instruction is given.
+
 
 ## World instructions
 
@@ -181,7 +183,7 @@ This is required for most world instructions to work, only one call is necessary
 - Ex: 
 ```
 PrimeScriptButton // Prime titanscript action
-SendChatButton "Click here to jump to line 5: <Click me!:titanscript jump 5>"
+ChatButton "Click here to jump to line 5: [<Click me!:titanscript jump 5>]"
 ```
 
 ## Recipe book
@@ -191,8 +193,33 @@ SendChatButton "Click here to jump to line 5: <Click me!:titanscript jump 5>"
 - A simple loop that counts from 0 to 9, printing the current loop count
 ```
 SetInteger loopCounter 0
-Print " $loopCounter "
+Print "Loop: $loopCounter"
 Increment loopCounter
 JumpNotEqual $loopCounter 10 2
 Print "Loop finished."
+```
+
+### Tick-tock
+- Ticks and tocks in the console every second for 1 minute.
+```
+SetInteger count 0
+
+// Tick
+Label tick 
+Print "Tick"
+Increment count
+JumpEqual $count 60 $end
+Delay 1000
+Jump $tock
+
+// Tock
+Label tock
+Print "Tock"
+Increment count
+JumpEqual $count 60 $end
+Delay 1000
+Jump $tick
+
+Label end
+EndScript
 ```
