@@ -72,23 +72,11 @@ public class Script
 	public void play(
 		@NotNull Player target
 	) {
-		// Store player's coordinates
-		createdIntegers.put("playerX", (int) target.getLocation().getX());
-		createdIntegers.put("playerY", (int) target.getLocation().getY());
-		createdIntegers.put("playerZ", (int) target.getLocation().getZ());
-
-		// Setup $return
-		createdIntegers.put("return", 0);
+		ScriptInstance instance = new ScriptInstance(scriptActions, target, this);
+		ScriptManager.registerPlaying(target, instance);
 
 		// Perform script
-		new BukkitRunnable()
-		{
-			@Override
-			public void run() 
-			{
-				playScript(target);	
-			}
-		}.runTask(Hyacinth.getInstance());
+		instance.play();
 	}
 
 	private void playScript(Player target)
@@ -265,7 +253,6 @@ public class Script
 				e.printStackTrace();
 			}
 			
-			ScriptManager.registerStop(target, this);
 		}
 	}
 

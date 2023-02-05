@@ -12,12 +12,12 @@ import coffee.khyonieheart.hyacinth.util.marker.Nullable;
 
 public class ScriptManager
 {
-	private static Map<Player, List<Script>> currentlyRunningScripts = new HashMap<>();
+	private static Map<Player, List<ScriptInstance>> currentlyRunningScripts = new HashMap<>();
 	private static List<Player> actionPrimedPlayers = new ArrayList<>(); // Keep track of players that have an action primed
 
 	public static void registerPlaying(
 		@NotNull Player player, 
-		@NotNull Script script
+		@NotNull ScriptInstance script
 	) {
 		if (!currentlyRunningScripts.containsKey(player)) // TODO Handle disconnect
 		{
@@ -29,7 +29,7 @@ public class ScriptManager
 
 	public static void registerStop(
 		@NotNull Player player,
-		@NotNull Script script 
+		@NotNull ScriptInstance script 
 	) {
 		if (!currentlyRunningScripts.containsKey(player))
 		{
@@ -40,7 +40,7 @@ public class ScriptManager
 	}
 
 	@Nullable
-	public static Script getRunningScript(
+	public static ScriptInstance getRunningScript(
 		@NotNull Player player, 
 		@NotNull String identifier
 	) {
@@ -49,7 +49,7 @@ public class ScriptManager
 			return null;
 		}
 
-		for (Script s : currentlyRunningScripts.get(player))
+		for (ScriptInstance s : currentlyRunningScripts.get(player))
 		{
 			if (s.getIdentifier().equals(identifier))
 			{
@@ -75,5 +75,10 @@ public class ScriptManager
 		@NotNull Player player
 	) {
 		actionPrimedPlayers.remove(player);
+	}
+
+	public static boolean isPrimed(Player player)
+	{
+		return actionPrimedPlayers.contains(player);
 	}
 }

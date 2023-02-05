@@ -1,7 +1,7 @@
 # Titanscript
 *A fast and flexible way for anyone to create functional quests using Opus.*
 
-*"/!\\" indicates an instruction is not implemented yet, beware.* 
+*"⚠" indicates an instruction is not implemented yet, beware.* 
 
 ### Variables
 Variables can be set by name in any variable-setting instruction, and can be referenced in any instruction by a dollar $ sign and the name. 
@@ -25,6 +25,7 @@ Any time an instruction expects a variable instead of a number, the parameter wi
 Some instructions may require a canonical Java enum to be supplied, this will usually look like `<org.bukkit.entity.EntityType>`. When these enums are required, the necessary documentation will be supplied below the instruction, and possible values will be under "Enum Constant Summary" on these pages, and will be in all uppercase.
 
 When it may not be entirely clear what a parameter is, the parameter will be shown as "`<name (type)>`".
+
 
 ## Logic instructions
 
@@ -56,6 +57,7 @@ Return
 // ^ Jumps to line 3
 Print "This will never be executed!"
 ```
+- To chain `Call`s, use `Push $return` to store $return on the stack, then use `Pop $return` later to retrieve it.
 
 `Return`
 - Moves execution to the line $return.
@@ -64,8 +66,12 @@ Print "This will never be executed!"
 - Delays the next instruction until after the specified number of ticks have elapsed.
 - After this instruction, the `Synchronize` instruction may be required.
 
+`Label <string>`
+- Stores the current line as a written label. Labels are always available from the beginning of execution.
+
 `Synchronize`
 - Synchronizes the next instruction to happen on the next tick. If any instruction desynchronizes from a tick, most instructions after will fail.
+
 
 ## Variable instructions
 
@@ -74,6 +80,13 @@ Print "This will never be executed!"
 
 `SetReturn <int>`
 - Sets $return to the specified value.
+
+⚠ `Push <int>`
+- Pushes an integer onto the stack.
+
+⚠ `Pop <string>`
+- Pops an integer from the top of the stack into the given variable.
+
 
 ## Arithmetic instructions
 
@@ -87,7 +100,7 @@ Print "This will never be executed!"
 ## Boolean instructions 
 *After execution, boolean instructions can be compared with logic instructions to branch execution.*
 
-/!\ `HasCompleted <string>`
+⚠ `HasCompleted <string>`
 - Checks whether or not a player has completed an objective, looked up by name.
 
 `Compare <int> <int>`
@@ -95,6 +108,7 @@ Print "This will never be executed!"
 
 
 ## Script instructions
+
 `EndScript`
 - Ends script execution.
 
@@ -103,6 +117,8 @@ Print "This will never be executed!"
 *Note: Quotes can be used to concatenate a string, however with variables, variables must be seperate from any quotation marks. *
 Example: Correct: `Print " $aVar is the count, the count is $aVar "`, Incorrect: "$aVar is the count, the count is $aVar"
 
+`None`
+- Does nothing. This is the default instruction when an unknown instruction is given.
 
 ## World instructions
 
@@ -151,14 +167,14 @@ This is required for most world instructions to work, only one call is necessary
 `Chat <string>`
 - Sends the given message to the player executing this script.
 
-`PlaySound <org.bukkit.Sound> <volume (float)> <pitch (float)>`
+`PlayPlayerSound <org.bukkit.Sound> <volume (float)> <pitch (float)>`
 - Plays a per-player sound (not audible to other players) at the player's location.
 - Uses Java org.bukkit.Sound, see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
 
 `PrimeScriptButton`
 - Allows a player to execute a script-altering command, such as `/titanscript jump 5`, which should always be done through a chat button.
 
-`SendChatButton <string>`
+`ChatButton <string>`
 - Sends the given message to the player executing this script, with support for command-executing buttons.
 - All titanscript commands will require the `PrimeScriptButton` instruction to be used.
 - Buttons are inserted in the following format: "<Button text:command without slash>".

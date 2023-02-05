@@ -13,6 +13,7 @@ public class Opus extends JavaPlugin
 	{
 		Folders.ensureFolder("./Titanborn/Scripts/");
 		Registration.registerCommandExecutor(new OpusCommand(), this, "opus");
+		Registration.registerCommandExecutor(new TitanscriptCommand(), this, "titanscript");
 
 		WaypointManager.startWaypointChecking(1l); // TODO This might be too laggy with enough waypoints and players
 	}
