@@ -2,31 +2,65 @@ package net.titanborn.opus;
 
 import java.io.File;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import coffee.khyonieheart.hyacinth.command.BukkitCommandMeta;
+import coffee.khyonieheart.hyacinth.Message;
+import coffee.khyonieheart.hyacinth.command.HyacinthCommand;
+import coffee.khyonieheart.hyacinth.module.HyacinthModule;
 import net.titanborn.opus.script.Script;
 
-@BukkitCommandMeta(
-	usage = "/titanscript <jump | attach | reload>",
-	description = "Handler for titanscripts.",
-	permission = "titanborn.titanscript.user",
-	aliases = { "ts", "scripts" }
-)
-public class TitanscriptCommand implements CommandExecutor
+/**
+ * Titancript command.
+ * Relevant permissions:
+ * opus.titanborn.user - Enables basic functionality from buttons
+ * opus.titanborn.ct - Content team commands
+ */
+public class TitanscriptCommand extends HyacinthCommand
 {
-	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) 
+	public TitanscriptCommand() 
 	{
-		switch (args[0])
+		super("titanscript", "/titanscript <play | attach | jump | read>", "opus.titanscript.user", "ts", "scripts");
+	}
+
+	public void play(CommandSender sender, String[] args)
+	{
+		if (!this.testPermissionStringSilent(sender, "opus.titanscript.ct"))
 		{
-			case "play":
-				new Script(new File("./Titanborn/Scripts/" + args[1] + ".script")).play((Player) sender);
-				break;
+			return;
 		}
-		return true;
+
+		new Script(new File("./Titanborn/Scripts/" + args[1] + ".script")).play((Player) sender);
+	}
+
+	public void read(CommandSender sender, String[] args)
+	{
+		if (!this.testPermissionStringSilent(sender, "opus.titanscript.ct"))
+		{
+			return;
+		}
+
+		Script script = new Script(new File("./Titanborn/Scripts/" + args[1] + ".script"));
+		if (script.getLines() == null)
+		{
+			Message.send(sender, "§cNo script file exists by that name.");
+			return;
+		}
+
+		for (String s : script.getLines())
+		{
+			if (s.startsWith("//"))
+			{
+				s = "§7" + s;
+			}
+
+			Message.send(sender, s);
+		}
+	}
+
+	@Override
+	public HyacinthModule getModule() 
+	{
+		return Opus.getInstance();
 	}
 }

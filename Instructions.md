@@ -25,6 +25,8 @@ Any time an instruction expects a variable instead of a number, the parameter wi
 
 `world`: A Minecraft world. This is the world's canonical name (I.E what's saved when the server shuts down, often "world", "world_nether", and "world_the_end").
 
+When a datatype ends with "...", such as "`<var>...`", zero or more of the given type may be specified, with no upper limit.
+
 Some instructions may require a canonical Java enum to be supplied, this will usually look like `<org.bukkit.entity.EntityType>`. When these enums are required, the necessary documentation will be supplied below the instruction, and possible values will be under "Enum Constant Summary" on these pages, and will be in all uppercase.
 
 When it may not be entirely clear what a parameter is, the parameter will be shown as "`<name (type)>`".
@@ -81,14 +83,14 @@ Print "This will never be executed."
 `SetInteger <string> <int>`
 - Sets an integer variable with the given name and value.
 
-`SetReturn <int>`
-- Sets $return to the specified value.
-
-⚠ `Push <int>`
+`Push <int>`
 - Pushes an integer onto the stack.
 
-⚠ `Pop <string>`
+`Pop <string>`
 - Pops an integer from the top of the stack into the given variable.
+
+'Touch <var>...'
+- Requests one or more integer variables are loaded from storage. If variables are not behaving as expected, touching them may fix them.
 
 
 ## Arithmetic instructions
@@ -98,6 +100,18 @@ Print "This will never be executed."
 
 `Decrement <var:int>`
 - Decrements the given integer variable by 1.
+
+`Add <var:int> <int>`
+- Adds the given integer to the given variable, storing the result as the same variable.
+
+`Subtract <int> <int>`
+- Subtracts the first integer by the second integer, storing the result in variable "$result".
+
+`Multiply <var:int> <int>`
+- Multiplies the given variable by the given integer, storing the result as the same variable.
+
+`Divide <int> <int>`
+- Divides the first integer by the second integer, storing the result in "$result".
 
 
 ## Boolean instructions 
